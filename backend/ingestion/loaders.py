@@ -1,52 +1,60 @@
+from pathlib import Path
+
 from pypdf import PdfReader
 from docx import Document
-from pathlib import Path
 
 def load_pdf(file_path):
 
-    reader  = PdfReader(file_path)
-
     documents = []
 
-    for page_number, page in enumerate(reader.pages):
-
+    pdf = PdfReader(file_path)
+    for page_num, page in enumerate(pdf.pages):
         text = page.extract_text()
+        if text and text.strip():
 
-        documents.append({
-            "text": text,
-            "metadata":{
-                "source": Path(file_path).name,
-                "page": page_number + 1,
-                "type": "pdf"
-            }
-        })
+            documents.append(
+                {
+                    "text": text,
+                    "metadata": {
+                        "source": Path(file_path).name,
+                        "page": page_num +1,
+                        "type": "pdf",
+                    },
+                }
+            )
     return documents
-
 def load_docx(file_path):
 
     doc = Document(file_path)
 
-    full_text = "\n".join(
-        [para.text for para in doc.paragraphs]
+    text = "\n".join(
+        para.text for para in doc.paragraphs
     )
 
-    return [{
-        "text": full_text,
-        "metadata": {
-            "source": Path(file_path).name,
-            "type": "docx"
+    return [
+        {
+            "text": text,
+            "metadata": {
+                "source": Path(file_path).name,
+                "type": "docx",
+                },
         }
-    }]
-
+    ]
 def load_txt(file_path):
 
-    with  open(file_path, "r", encoding="utf-8") as file:
-        text = file.read()
-
-    return [{
-        "text": text,
-        "metadata":{
-            "source": Path(file_path).name,
-            "type": "txt"
+    with open(
+        file_path,
+        "r",
+        encoding="utf-8",
+    ) as f:
+        
+        text = f.read()
+    return [
+        {
+            "text": text,
+            "metadata": {
+                "source": Path(file_path).name,
+                "type": "txt",
+            },
         }
-    }]
+    ]

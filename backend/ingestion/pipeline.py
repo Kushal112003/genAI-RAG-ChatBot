@@ -1,39 +1,75 @@
+from pathlib import Path
+
 from backend.ingestion.loaders import (
-    load_txt,
     load_pdf,
-    load_docx
+    load_docx,
+    load_txt,
 )
 
 from backend.ingestion.chunking import (
-    chunk_documents
+    chunk_documents,
 )
 
-from backend.rag.embeddings import (
-    store_embeddings
+from backend.database.chroma_manager import (
+    collection,
 )
 
+DATA_FOLDER = Path("data")
 
-all_documents = []
+documents = []
 
-all_documents.extend(
-    load_txt("data/sample.txt")
+for file in DATA_FOLDER.iterdir():
+
+    suffix = file.suffix.lower()
+
+    if suffix == ".pdf":
+
+        documents.extend(
+            load_pdf(str(file))
+        )
+
+    elif suffix == ".docx":
+
+        documents.extend(
+            load_docx(str(file))
+        )
+
+    elif suffix == ".txt":
+
+        documents.extend(
+            load_txt(str(file))
+        )
+
+print(
+    f"\nLoaded {len(documents)} document(s)"
 )
 
-all_documents.extend(
-    load_pdf("data/Pulumi Assignment.pdf")
+chunks = chunk_documents(
+    documents
 )
 
-all_documents.extend(
-    load_docx("data/GenAI assignment week 1.docx")
+print(
+    f"Generated {len(chunks)} chunk(s)"
 )
 
+try:
 
-chunks = chunk_documents(all_documents)
+    collection.delete(
+        ids=collection.get()["ids"]
+    )
 
+except:
 
-print(f"\nLoaded {len(all_documents)} document(s)")
+    pass
 
-print(f"Generated {len(chunks)} chunk(s)\n")
+for idx, chunk in enumerate(chunks):
 
+    collection.add(
+        documents=[chunk["text"]],
+        metadatas=[chunk["metadata"]],
+        ids=[f"chunk_{idx}"],
+    )
 
-store_embeddings(chunks)
+print(
+    "\nEmbeddings stored successfully."
+)
