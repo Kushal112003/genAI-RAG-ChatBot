@@ -1,3 +1,4 @@
+import uuid
 from pathlib import Path
 
 from backend.ingestion.loaders import (
@@ -62,14 +63,13 @@ except:
 
     pass
 
-for idx, chunk in enumerate(chunks):
+for chunk in chunks:
 
     collection.add(
         documents=[chunk["text"]],
         metadatas=[chunk["metadata"]],
-        ids=[f"chunk_{idx}"],
+        ids=[str(uuid.uuid4())],
     )
-
 print(
     "\nEmbeddings stored successfully."
 )

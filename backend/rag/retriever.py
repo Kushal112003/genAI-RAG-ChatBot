@@ -4,7 +4,7 @@ from backend.database.chroma_manager import (
 
 def retrieve_relevant_chunks(
         query,
-        top_k=5
+        top_k=10
 ):
     results = collection.query(
         query_texts=[query],
