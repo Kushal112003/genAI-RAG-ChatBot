@@ -1,0 +1,67 @@
+Enterprise 2-in-1 RAG Architecture: A Detailed Explainer
+======================================================
+(For Students and System Evaluators)
+
+This document explains the core architecture, recent upgrades, and the complete transformation of this GenAI RAG system from a basic chatbot to a production-grade, 2-in-1 Enterprise platform.
+
+1. What is RAG? (Retrieval-Augmented Generation)
+------------------------------------------------
+LLMs (like LLaMA 3 or GPT-4) only know what they were trained on. If you ask them a highly specific question about your company's proprietary Terraform scripts or internal HR policies, they will hallucinate or say "I don't know."
+RAG solves this by:
+  a) Searching a local database of your documents for relevant information.
+  b) Passing those relevant document snippets to the LLM.
+  c) Instructing the LLM to generate an answer based *only* on those snippets.
+
+2. Architecture Overview
+------------------------
+This system is composed of several modular components:
+- Frontend: Streamlit (Provides an interactive UI, chat history, and document uploading).
+- Backend: FastAPI (Handles REST API routes for Chat, Telemetry, and Uploads).
+- Vector Database: ChromaDB (Stores text "chunks" and their semantic vector embeddings).
+- Embeddings: HuggingFace (all-MiniLM-L6-v2 via ONNX) (Converts text into mathematical vectors).
+- LLM Provider: Groq (Hosts blazing fast LLaMA models, accessed via API).
+- Evaluation: RAGAS (Framework used to automatically score the quality of generated answers).
+
+3. The "2-in-1" Domain Segregation System
+-----------------------------------------
+A major upgrade to this platform is the "2-in-1" Domain Segregation. 
+*The Problem:* Originally, if a user asked "What are our policies?", the LLM would search a giant pool of all documents. It would often blend engineering concepts with HR policies, leading to a confusing "mixed persona."
+*The Solution:*
+  - Metadata Tagging: When a document is uploaded, the user specifies a domain (e.g., "Engineering" or "Company Policy"). This domain is saved as metadata in ChromaDB.
+  - Hybrid Routing: When a user asks a question, they can explicitly select the Context from a UI dropdown. 
+  - Strict Data Isolation: The backend passes `where={"domain": "policy"}` to ChromaDB. ChromaDB strictly filters the vector space and physically cannot retrieve engineering documents for a policy question.
+  - Dynamic Personas: The backend dynamically swaps the LLM's system prompt. If the policy domain is selected, the LLM is instructed to act *only* as an HR Expert, further preventing topic drift.
+
+4. Incremental Ingestion & Deduplication
+----------------------------------------
+*The Problem:* If a user uploads the same PDF twice, naive systems will duplicate the text in the database, wasting space and ruining search results.
+*The Solution:*
+  - The ingestion pipeline now hashes the source content using MD5 to generate a unique ID for every single text chunk.
+  - Instead of using `collection.add()`, the system uses a batched `collection.upsert()`. 
+  - Upsert (Update or Insert) ensures that if a chunk already exists, it is simply updated, completely eliminating duplicates.
+  - **Soft Deletions:** ChromaDB v1.5.9 has a known bug where physically deleting nodes using `.delete()` corrupts the HNSW graph, causing queries to instantly crash with `Error finding id`. To safely manage documents, the system uses a "Soft Deletion" strategy: when a user deletes a file via the UI, the system overwrites the text chunks with empty strings and changes their domain to `"deleted"`. This perfectly hides them from all future queries while strictly bypassing the graph corruption bug.
+
+5. Hybrid Search (Vector + BM25)
+--------------------------------
+*The Problem:* Semantic vector search is great for finding *concepts* (e.g., "How do I deploy?"), but terrible at finding exact keywords (e.g., "Error code 0x800F081F").
+*The Solution:* 
+  - The system implements Hybrid Search by combining ChromaDB's semantic vector search with a custom TF-IDF (BM25-style) keyword search.
+  - Reciprocal Rank Fusion (RRF): The results from both searches are mathematically ranked and merged, ensuring that the system returns chunks that are both conceptually relevant AND keyword-accurate.
+
+6. Telemetry & Analytics
+------------------------
+To make this a true enterprise application, we integrated a SQLite-based telemetry system.
+- Every chat request logs the query, the domain, the latency (response time), and the provider.
+- A feedback mechanism allows users to thumbs up / thumbs down responses, which writes directly to the telemetry database. This data is exposed to the frontend dashboard.
+
+7. Professional Prompt Engineering
+----------------------------------
+The system prompt was rewritten to force the LLM into professional behaviors:
+- It demands strict markdown formatting (Tables, Headers, Lists).
+- It explicitly requires "Context Resolution" using Conversation History (Memory).
+- It enforces a strict Citation format (`SOURCES_USED:`), parsing only valid document names to prevent the LLM from inventing fake references.
+- **Zero Hallucination Guardrails:** If a user asks an out-of-domain question (e.g., asking about HR policies in the Engineering database), older prompts would fallback to the LLM's pre-trained "General Knowledge". The prompt now strictly forbids this, forcing the LLM to output a hard refusal: *"I cannot answer this question because the provided documents do not contain relevant information."*
+
+Summary of Transformation
+-------------------------
+We took a basic, monolithic script and turned it into a modular, FastAPI-driven backend with a dedicated frontend. We solved ChromaDB corruption through batched upserts, added RAGAS evaluation metrics, implemented strict Domain Segregation for multiple use cases, integrated Hybrid Search, and added analytics tracking. It is now highly efficient (K=6) and optimized for rate-limited APIs like Groq's free tier.

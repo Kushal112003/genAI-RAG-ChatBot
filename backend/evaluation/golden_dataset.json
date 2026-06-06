@@ -1,0 +1,10 @@
+[
+    {
+        "question": "What is Terraform?",
+        "ground_truth": "Terraform is an Infrastructure as Code (IaC) tool used for provisioning and managing cloud infrastructure using declarative configuration."
+    },
+    {
+        "question": "Why do we need Terraform?",
+        "ground_truth": "Terraform allows engineering teams to automate infrastructure provisioning, ensuring environments are reproducible, version-controlled, and consistent across deployments."
+    }
+]

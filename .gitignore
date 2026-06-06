@@ -1,8 +1,65 @@
+# Environments
+.env
+.env.*
+!.env.example
+
+# Python
 venv/
 venv311/
+env/
+.venv/
 __pycache__/
-*.pyc
-.env
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Data & Storage
 vectorstore/
-logs/
 data/
+*.db
+*.sqlite3
+
+# Logs & Output
+logs/
+*.log
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Secrets & Keys (Redundant safety)
+*.pem
+*.key
+*.cert
+*.cer
+*.p12
+*.pfx
+secrets.json
+config.json
+credentials.json
+# Additional Safety
+.gemini/
+*.json.bak
+private_keys/
+keys/
+token.pickle

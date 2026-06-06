@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  backend:
+    build: .
+    container_name: rag-backend
+    command: uvicorn backend.api.app:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./vectorstore:/app/vectorstore
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: .
+    container_name: rag-frontend
+    command: streamlit run frontend/streamlit_app.py --server.port 8501 --server.address 0.0.0.0 --server.fileWatcherType none
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./vectorstore:/app/vectorstore
+      - ./data:/app/data
+    env_file:
+      - .env
+    depends_on:
+      - backend
+    restart: unless-stopped

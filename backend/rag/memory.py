@@ -17,3 +17,7 @@ def get_history():
             for msg in conversation_memory[-10:]
         ]
     )
+
+def clear_history():
+    global conversation_memory
+    conversation_memory.clear()

@@ -1,42 +1,68 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+"""
+Enterprise Knowledge Assistant — FastAPI Application
+=====================================================
+Production-grade REST API with proper router separation,
+CORS middleware, and health checks.
+"""
 
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 load_dotenv()
 
-from backend.rag.generator import (
-    generate_answer
-)
+from backend.api.routes.chat import router as chat_router
+from backend.api.routes.upload import router as upload_router
+from backend.api.routes.analytics import router as analytics_router
+
+# ──────────────────────────────────────────────
+# Application
+# ──────────────────────────────────────────────
 
 app = FastAPI(
-    title="Engineering Knowledge Assistant API"
-
+    title="Enterprise Knowledge Assistant API",
+    description=(
+        "A production-grade RAG API that supports multi-domain document "
+        "retrieval (Engineering & Company Policies), multi-LLM providers, "
+        "and RAGAS-based evaluation."
+    ),
+    version="2.0.0",
 )
-class ChatRequest(BaseModel):
 
-    question: str
+# ──────────────────────────────────────────────
+# Middleware
+# ──────────────────────────────────────────────
 
-@app.get("/")
-def root():
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# ──────────────────────────────────────────────
+# Routers
+# ──────────────────────────────────────────────
+
+app.include_router(chat_router)
+app.include_router(upload_router)
+app.include_router(analytics_router)
+
+# ──────────────────────────────────────────────
+# Root & Health
+# ──────────────────────────────────────────────
+
+
+@app.get("/", tags=["System"])
+async def root():
     return {
-        "message":
-        "Engineering Knowledge Base Assistant API"    
-        }
-@app.get("/health")
-def health():
-
-    return {
-        "status": "healthy"
+        "service": "Enterprise Knowledge Assistant API",
+        "version": "2.0.0",
+        "status": "running",
     }
-@app.post("/chat")
-def chat(
-    request: ChatRequest
-):
 
-    response = generate_answer(
-        request.question
-    )
 
-    return response
+@app.get("/health", tags=["System"])
+async def health():
+    return {"status": "healthy"}

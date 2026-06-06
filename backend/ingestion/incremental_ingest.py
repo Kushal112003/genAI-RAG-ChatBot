@@ -18,7 +18,8 @@ import uuid
 
 
 def ingest_single_document(
-    file_path
+    file_path,
+    domain="engineering"
 ):
 
     suffix = Path(file_path).suffix.lower()
@@ -45,21 +46,24 @@ def ingest_single_document(
         documents
     )
 
+    filename = Path(file_path).name
+
+    texts = []
+    metas = []
+    ids = []
+
     for chunk in chunks:
+        chunk["metadata"]["domain"] = domain
+        texts.append(chunk["text"])
+        metas.append(chunk["metadata"])
+        ids.append(chunk["id"])
 
-        collection.add(
-
-            documents=[
-                chunk["text"]
-            ],
-
-            metadatas=[
-                chunk["metadata"]
-            ],
-
-            ids=[
-                str(uuid.uuid4())
-            ]
+    batch_size = 100
+    for i in range(0, len(texts), batch_size):
+        collection.upsert(
+            documents=texts[i:i+batch_size],
+            metadatas=metas[i:i+batch_size],
+            ids=ids[i:i+batch_size],
         )
 
     return len(chunks)

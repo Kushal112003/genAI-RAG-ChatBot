@@ -4,11 +4,24 @@ from backend.database.chroma_manager import (
 
 def retrieve_relevant_chunks(
         query,
-        top_k=10
+        top_k=10,
+        domain=None
 ):
-    results = collection.query(
-        query_texts=[query],
-        n_results=top_k
-    )
+    """
+    Query ChromaDB for the most relevant chunks.
+
+    If a domain is provided, only chunks tagged with that domain
+    will be searched (metadata filtering).
+    """
+
+    query_params = {
+        "query_texts": [query],
+        "n_results": top_k,
+    }
+
+    if domain:
+        query_params["where"] = {"domain": domain}
+
+    results = collection.query(**query_params)
 
     return results
