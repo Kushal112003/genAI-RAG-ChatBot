@@ -41,29 +41,29 @@ This platform uses a modern, open-source stack designed for speed, cost-efficien
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│                    Streamlit Frontend                    │
-│  ┌──────────┐  ┌──────────────┐  ┌──────────────────┐  │
-│  │ Chat UI  │  │ File Upload  │  │ RAGAS Evaluation  │  │
-│  │          │  │ + Domain Tag │  │    Dashboard      │  │
-│  └──────────┘  └──────────────┘  └──────────────────┘  │
+│                    Streamlit Frontend                   │
+│  ┌──────────┐  ┌──────────────┐  ┌──────────────────┐   │
+│  │ Chat UI  │  │ File Upload  │  │ RAGAS Evaluation │   │
+│  │          │  │ + Domain Tag │  │    Dashboard     │   │
+│  └──────────┘  └──────────────┘  └──────────────────┘   │
 └───────────────────────┬─────────────────────────────────┘
                         │ HTTP (REST API)
 ┌───────────────────────▼─────────────────────────────────┐
-│                    FastAPI Backend                        │
+│                    FastAPI Backend                      │
 │  ┌──────────────────────────────────────────────────┐   │
-│  │              Query Context Router                 │   │
-│  │         engineering ◄──► policy                    │   │
+│  │              Query Context Router                │   │
+│  │         engineering ◄──► policy                  │   │
 │  └──────────────────┬───────────────────────────────┘   │
 │  ┌──────────────────▼───────────────────────────────┐   │
-│  │           Retriever (Domain-Filtered)             │   │
-│  │     ChromaDB Vector Search + BM25 Hybrid          │   │
+│  │           Retriever (Domain-Filtered)            │   │
+│  │     ChromaDB Vector Search + BM25 Hybrid         │   │
 │  └──────────────────┬───────────────────────────────┘   │
 │  ┌──────────────────▼───────────────────────────────┐   │
-│  │         LLM Provider Registry                     │   │
-│  │    Groq  │  OpenAI  │  (Extensible)               │   │
+│  │         LLM Provider Registry                    │   │
+│  │    Groq  │  OpenAI  │  (Extensible)              │   │
 │  └──────────────────┬───────────────────────────────┘   │
 │  ┌──────────────────▼───────────────────────────────┐   │
-│  │      Generator (Streaming + Citation Parsing)     │   │
+│  │      Generator (Streaming + Citation Parsing)    │   │
 │  └──────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────┘
 ```
