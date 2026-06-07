@@ -21,7 +21,7 @@ Instead of relying solely on what an LLM memorized during training, RAG introduc
 
 ## Why Not Just Use ChatGPT?
 
-A common question is: *"Why use a RAG platform when ChatGPT can already answer questions about technologies such as Terraform, Kubernetes, Linux, and AWS?"*
+A common question is: *"Why use a RAG platform when ChatGPT or any other LLM tool can already answer questions about technologies such as Terraform, Kubernetes, Linux, and AWS?"*
 
 The answer is that this platform is not designed to replace ChatGPT for public knowledge.
 
