@@ -19,6 +19,47 @@ Instead of relying solely on what an LLM memorized during training, RAG introduc
 - [Pinecone: RAG Explained](https://www.pinecone.io/learn/retrieval-augmented-generation/)
 - [RAGAS: Evaluating RAG Pipelines](https://docs.ragas.io/en/stable/)
 
+## Why Not Just Use ChatGPT?
+
+A common question is: *"Why use a RAG platform when ChatGPT can already answer questions about technologies such as Terraform, Kubernetes, Linux, and AWS?"*
+
+The answer is that this platform is not designed to replace ChatGPT for public knowledge.
+
+Large Language Models are already highly capable at answering general questions about widely known technologies. However, organizations operate using large amounts of private, internal, and constantly evolving knowledge that public LLMs cannot access.
+
+Examples include:
+
+* Internal deployment runbooks
+* Company-specific Terraform standards
+* Architecture decision records (ADRs)
+* Incident response procedures
+* Security policies
+* HR and company policy documents
+* Internal onboarding guides
+* Standard operating procedures (SOPs)
+
+For example, ChatGPT can explain **what Kubernetes is**, but it cannot answer:
+
+* Which Kubernetes namespaces does our organization use?
+* What is our production deployment process?
+* Which Terraform modules are approved internally?
+* What is our company's leave approval workflow?
+
+This platform bridges that gap by combining LLM reasoning with organization-specific knowledge stored in private documents.
+
+Key advantages include:
+
+* Retrieval from private knowledge bases
+* Domain isolation (Engineering vs Policy)
+* Source-backed answers with citations
+* Hybrid retrieval for better accuracy
+* Evaluation using RAGAS
+* Telemetry and usage analytics
+* Deployable within an organization's environment
+
+The goal is not to compete with ChatGPT on public information, but to provide trustworthy access to proprietary organizational knowledge that public models do not possess.
+
+
 ---
 
 ## 🛠️ Tools & Libraries Used
