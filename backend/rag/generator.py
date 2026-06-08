@@ -62,6 +62,28 @@ async def generate_answer_stream(question: str, provider_name: str = None, conte
     # ── Retrieve documents (Hybrid Search, Top 6) ──────────────────────
     retrieved = hybrid_retrieve(question, top_k=6, domain=domain)
 
+    if not retrieved["documents"][0]:
+        msg = (
+            "I cannot answer this question because "
+            "the provided documents do not contain "
+            "relevant information."
+            )
+        yield json.dumps({
+            "type": "token",
+            "content": msg
+        }) + "\n"
+        
+        yield json.dumps({
+            "type": "sources",
+            "content": [],
+            "contexts": [],
+            "domain": domain,
+            "query_id": None,
+            "latency_ms": 0
+        }) + "\n"
+        
+        return
+
     contexts = []
     sources = []
     source_map = {}
@@ -186,9 +208,8 @@ RULES FOR ANSWERING
                     cited_sources.append(name)
 
     # Fallback: if the LLM didn't follow citation format, use all sources
-    if not cited_sources:
-        cited_sources = list(set(sources))
-
+    if not cited_sources and contexts:
+        cited_sources = []
     # ── Log Telemetry ───────────────────────────
     duration_ms = int((time.time() - start_time) * 1000)
     query_id = log_query(question, domain, duration_ms, provider_name)

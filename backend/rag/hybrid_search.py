@@ -92,9 +92,32 @@ def hybrid_retrieve(
         # No documents — return empty result in ChromaDB format
         return {"documents": [[]], "metadatas": [[]], "ids": [[]]}
 
-    doc_ids = all_data["ids"]
-    doc_texts = all_data["documents"]
-    doc_metas = all_data["metadatas"]
+    doc_ids = []
+    doc_texts = []
+    doc_metas = []
+
+    for doc_id, doc_text, meta in zip(
+        all_data["ids"],
+        all_data["documents"],
+        all_data["metadatas"]
+        ):
+        if (
+            meta.get("deleted", False)
+            or meta.get("domain") == "deleted"
+            or meta.get("source") == "deleted"
+            ):
+            continue
+        
+        doc_ids.append(doc_id)
+        doc_texts.append(doc_text)
+        doc_metas.append(meta)
+        
+        if not doc_ids:
+            return {
+                "documents": [[]],
+                "metadatas": [[]],
+                "ids": [[]]
+                }
 
     # ── 2. BM25 ranking ─────────────────────────────────────
     query_tokens = _tokenize(query)
@@ -121,10 +144,16 @@ def hybrid_retrieve(
     ]
 
     # ── 3. Semantic (vector) ranking ────────────────────────
-    query_params = {"query_texts": [query], "n_results": min(top_k * 3, len(doc_ids))}
+    query_params = {"query_texts": [query], "n_results": min(top_k * 3, len(doc_ids)), "where": {
+        "deleted": {"$ne": True}}
+    }
     if domain:
-        query_params["where"] = {"domain": domain}
-
+        query_params["where"] = {
+        "$and": [
+            {"deleted": {"$ne": True}},
+            {"domain": domain}
+        ]
+    }
     vector_results = get_collection().query(**query_params)
     vector_ranked = vector_results["ids"][0]
 

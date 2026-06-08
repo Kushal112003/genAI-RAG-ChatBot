@@ -66,6 +66,12 @@ def list_documents():
 
     documents = {}
     for meta in data["metadatas"]:
+        if (
+            meta.get("deleted", False)
+            or meta.get("domain") == "deleted"
+            or meta.get("source") == "deleted"
+            ):
+            continue  # Skip deleted chunks
         source = meta.get("source", "Unknown")
         domain = meta.get("domain", "untagged")
 

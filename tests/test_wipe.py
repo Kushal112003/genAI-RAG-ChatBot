@@ -1,7 +1,12 @@
-from backend.database.chroma_manager import collection
+# tests/test_query.py
 
-print("Count:", collection.count())
+from backend.database.chroma_manager import get_collection
 
-ids = collection.get()["ids"]
+collection = get_collection()
 
-print("IDs Retrieved:", len(ids))
+result = collection.query(
+    query_texts=["terraform"],
+    n_results=1
+)
+
+print(result)
