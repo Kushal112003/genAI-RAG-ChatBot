@@ -88,7 +88,7 @@ async def delete_document(filename: str):
             # Overwrite the chunks with empty text and a 'deleted' domain
             # This hides them from queries without triggering the ChromaDB delete bug
             empty_docs = [""] * len(data["ids"])
-            new_metas = [{"source": "deleted", "domain": "deleted"}] * len(data["ids"])
+            new_metas = [{"source": filename, "domain": "deleted", "deleted": True}] * len(data["ids"])
             collection.upsert(ids=data["ids"], documents=empty_docs, metadatas=new_metas)
             chunks_deleted = len(data["ids"])
         else:
