@@ -12,8 +12,7 @@ import re
 import math
 from collections import defaultdict
 
-from backend.database.chroma_manager import collection
-
+from backend.database.chroma_manager import get_collection
 
 def _tokenize(text: str) -> list[str]:
     """Simple whitespace + punctuation tokenizer."""
@@ -87,7 +86,7 @@ def hybrid_retrieve(
     if domain:
         get_params["where"] = {"domain": domain}
 
-    all_data = collection.get(**get_params)
+    all_data = get_collection().get(**get_params)
 
     if not all_data["ids"]:
         # No documents — return empty result in ChromaDB format
@@ -126,7 +125,7 @@ def hybrid_retrieve(
     if domain:
         query_params["where"] = {"domain": domain}
 
-    vector_results = collection.query(**query_params)
+    vector_results = get_collection().query(**query_params)
     vector_ranked = vector_results["ids"][0]
 
     # ── 4. Reciprocal Rank Fusion ───────────────────────────

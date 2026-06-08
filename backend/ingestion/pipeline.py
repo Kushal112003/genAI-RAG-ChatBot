@@ -18,9 +18,7 @@ from backend.ingestion.chunking import (
     chunk_documents,
 )
 
-from backend.database.chroma_manager import (
-    collection,
-)
+from backend.database.chroma_manager import get_collection
 
 
 def run_pipeline():
@@ -58,9 +56,9 @@ def run_pipeline():
 
     # Clear existing data
     try:
-        existing = collection.get()["ids"]
+        existing = get_collection().get()["ids"]
         if existing:
-            collection.delete(ids=existing)
+            get_collection().delete(ids=existing)
             print(f"Cleared {len(existing)} existing chunks")
     except Exception:
         pass
@@ -85,14 +83,14 @@ def run_pipeline():
         
     batch_size = 100
     for i in range(0, len(texts), batch_size):
-        collection.upsert(
+        get_collection().upsert(
             documents=texts[i:i+batch_size],
             metadatas=metas[i:i+batch_size],
             ids=ids[i:i+batch_size],
         )
 
     print("\nEmbeddings stored successfully.")
-    print(f"Total chunks in database: {collection.count()}")
+    print(f"Total chunks in database: {get_collection().count()}")
 
 
 if __name__ == "__main__":

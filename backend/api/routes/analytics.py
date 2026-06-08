@@ -5,8 +5,7 @@ Provides system statistics, document inventory, and evaluation triggers.
 """
 
 from fastapi import APIRouter, HTTPException
-
-from backend.database.chroma_manager import collection
+from backend.database.chroma_manager import get_collection
 from backend.database.stats import get_stats
 from backend.evaluation.metrics import get_metrics
 from backend.rag.llm_providers import get_available_providers, get_all_provider_names
@@ -45,6 +44,7 @@ def stats():
     base_stats = get_stats()
 
     # Domain breakdown
+    collection = get_collection()
     data = collection.get(include=["metadatas"])
     domain_counts = {}
     for meta in data["metadatas"]:
@@ -60,6 +60,8 @@ def list_documents():
     """
     Return a list of all indexed documents with their domain tags.
     """
+    collection = get_collection()
+
     data = collection.get(include=["metadatas"])
 
     documents = {}

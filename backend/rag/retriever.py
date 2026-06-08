@@ -1,6 +1,4 @@
-from backend.database.chroma_manager import (
-    collection
-)
+from backend.database.chroma_manager import get_collection
 
 def retrieve_relevant_chunks(
         query,
@@ -22,6 +20,6 @@ def retrieve_relevant_chunks(
     if domain:
         query_params["where"] = {"domain": domain}
 
-    results = collection.query(**query_params)
+    results = get_collection().query(**query_params)
 
     return results

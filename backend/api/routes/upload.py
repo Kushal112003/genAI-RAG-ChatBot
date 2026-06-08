@@ -11,7 +11,7 @@ from pathlib import Path
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException
 
 from backend.ingestion.incremental_ingest import ingest_single_document
-from backend.database.chroma_manager import collection
+from backend.database.chroma_manager import get_collection, client
 
 router = APIRouter(tags=["Upload"])
 
@@ -78,6 +78,8 @@ async def delete_document(filename: str):
     Selectively delete a document and its chunks from the database.
     """
     file_path = DATA_DIR / filename
+
+    collection = get_collection()
     
     # 1. Soft Delete from ChromaDB to prevent HNSW crash
     try:
@@ -115,30 +117,47 @@ async def wipe_database():
     """
     Completely wipe the vector database and delete all uploaded files.
     """
-    # 1. Soft Delete all vectors
-    try:
-        existing = collection.get()["ids"]
-        if existing:
-            empty_docs = [""] * len(existing)
-            new_metas = [{"source": "deleted", "domain": "deleted"}] * len(existing)
-            collection.upsert(ids=existing, documents=empty_docs, metadatas=new_metas)
-            chunks_deleted = len(existing)
-        else:
-            chunks_deleted = 0
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to clear DB: {str(e)}")
 
-    # 2. Delete all files in data/
+    try:
+        # Remove entire collection
+        client.delete_collection(
+            "engineering_knowledge_base"
+        )
+
+        # Recreate fresh collection
+        from backend.database import chroma_manager
+
+        chroma_manager.collection = (
+            client.get_or_create_collection(
+                name="engineering_knowledge_base"
+            )
+        )
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to reset database: {str(e)}"
+        )
+
+    # Delete uploaded files
     files_deleted = 0
+
     if DATA_DIR.exists():
+
         for file in DATA_DIR.iterdir():
-            # don't delete telemetry.db if it's there
-            if file.is_file() and file.name != "telemetry.db":
+
+            if (
+                file.is_file()
+                and file.name != "telemetry.db"
+            ):
+
                 file.unlink()
                 files_deleted += 1
 
     return {
-        "message": "Database wiped successfully",
-        "chunks_deleted": chunks_deleted,
+        "message": "Database completely reset",
         "files_deleted": files_deleted
     }

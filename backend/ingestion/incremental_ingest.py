@@ -10,9 +10,7 @@ from backend.ingestion.chunking import (
     chunk_documents,
 )
 
-from backend.database.chroma_manager import (
-    collection,
-)
+from backend.database.chroma_manager import get_collection
 
 import uuid
 
@@ -60,7 +58,7 @@ def ingest_single_document(
 
     batch_size = 100
     for i in range(0, len(texts), batch_size):
-        collection.upsert(
+        get_collection().upsert(
             documents=texts[i:i+batch_size],
             metadatas=metas[i:i+batch_size],
             ids=ids[i:i+batch_size],

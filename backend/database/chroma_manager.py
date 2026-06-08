@@ -1,12 +1,15 @@
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-import chromadb 
+import chromadb
 
 client = chromadb.PersistentClient(
     path="vectorstore"
 )
 
-collection = client.get_or_create_collection(
-    name="engineering_knowledge_base",
-)
+def get_collection():
+    return client.get_or_create_collection(
+        name="engineering_knowledge_base"
+    )
+
+collection = get_collection()
